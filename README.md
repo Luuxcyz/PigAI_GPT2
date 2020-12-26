@@ -100,7 +100,7 @@ users:
 
 - （更新中...）
 
-### :alien:混淆神经网络![](https://latex.codecogs.com/svg.latex?(\rm ONN))
+### :alien:混淆神经网络![](https://latex.codecogs.com/svg.latex?(\rm%20ONN))
 
 > 一种基于回文并序自然语言阅读理解的深度学习模型（尝试适配分布式异构计算）
 
