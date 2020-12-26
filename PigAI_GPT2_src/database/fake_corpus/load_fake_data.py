@@ -1,6 +1,6 @@
 import random
 import string
-from config import ROOT_PATH_CORPUS_FAKE
+from PigAI_GPT2_src.config import ROOT_PATH_FAKE_CORPUS,TEXT_LENGTH
 
 
 def load_fake_data(fp):
@@ -17,7 +17,7 @@ def load_fake_data(fp):
     return source
 
 
-def generate_fake_text(fp: str = ROOT_PATH_CORPUS_FAKE):
+def generate_fake_text(fp: str = ROOT_PATH_FAKE_CORPUS):
     source = load_fake_data(fp)
     sample = ''
     while True:
@@ -31,7 +31,7 @@ def generate_fake_text(fp: str = ROOT_PATH_CORPUS_FAKE):
         sample: str = sample[:-1] if sample.endswith('..') else sample
         # sample = sample[1:] if sample.startswith('.') else sample
         # print('\r{}'.format(sample.split(' ').__len__(), sample), end='')
-        if sample.split(' ').__len__() > 460:
+        if sample.split(' ').__len__() > TEXT_LENGTH:
             return {
                 'len': sample.split(' ').__len__(),
                 'text': sample

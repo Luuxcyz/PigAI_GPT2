@@ -2,24 +2,25 @@ from gevent import monkey
 
 monkey.patch_all()
 
-import time
+import os
 import re
 import csv
+import yaml
+import time
 from datetime import datetime
 
-import yaml
-from yaml.parser import ParserError
 import gevent
 from gevent.queue import Queue
+from yaml.parser import ParserError
 from concurrent.futures import ThreadPoolExecutor
 from selenium.webdriver import Chrome, ChromeOptions
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.common.exceptions import *
 
-from config import *
+from PigAI_GPT2_src.config import *
 
 
 class ActionTraceSpider(object):
@@ -61,7 +62,7 @@ class ActionTraceSpider(object):
             )))
 
     @staticmethod
-    def set_spiderOption(use_proxy=False):
+    def set_spiderOption():
         """浏览器初始化"""
 
         options = ChromeOptions()
@@ -115,17 +116,17 @@ class ActionTraceSpider(object):
         try:
             cookies = api.get_cookies()
             import json
-            with open('./database/cookies.txt', 'w', encoding='utf-8') as f:
+            with open('database/cookies.txt', 'w', encoding='utf-8') as f:
                 f.write(json.dumps(cookies))
             pending = True
         finally:
-            print('>>> Task over: save cookies ' if pending else '>>> Task failed: save cookie')
+            logger.debug('>>> Task over: save cookies ' if pending else '>>> Task failed: save cookie')
 
     def login(self, api: Chrome, url, username, password):
         try:
             api.get(url)
         except WebDriverException:
-            print('>>> [ERROR] 任务强制结束 || function login :api.get(url) panic')
+            logger.warning('>>> [ERROR] 任务强制结束 || function login :api.get(url) panic')
             return None
 
         self.wait(api, 5, 'all')
@@ -156,7 +157,7 @@ class ActionTraceSpider(object):
             self.stu_num = [i.split(':')[-1] for i in re.split('[，。]', info) if '学号' in i][0]
             self.stu_name = api.find_element_by_id('pigai_name').text
         except NoSuchElementException:
-            print('>>> [ERROR] No paper number || Get student info failed.')
+            logger.error('>>> [ERROR] No paper number || Get student info failed.')
 
     def submit(self, api: Chrome):
         api.find_element_by_id('dafen').click()
@@ -171,19 +172,17 @@ class ActionTraceSpider(object):
                 api.find_element_by_xpath(f"//option[@value='{class_name}']").click()
                 time.sleep(1)
                 api.find_element_by_id('icibaWinBotton').find_element_by_tag_name('input').click()
-
-                print('>>> SELECT：{}'.format(class_name))
+                logger.info('>>> [SELECT] {}'.format(class_name))
             except NoSuchElementException:
-                print(f'>>> 当前作文不支持班级选择或本班级未布置该篇写作训练.(pid:{self.pid})')
+                logger.warning(f'>>> 当前作文不支持班级选择或本班级未布置该篇写作训练.(pid:{self.pid})')
 
     @staticmethod
     def smash_the_popup(api: Chrome, smash_type: str, ):
         if smash_type == 'alert':
             try:
                 alert = api.switch_to.alert
-                print(">>> SystemWarning || {}".format(alert.text))
+                logger.warning(">>> {}".format(alert.text))
                 alert.accept()
-                print('>>> accept')
             except NoAlertPresentException:
                 pass
 
@@ -194,11 +193,10 @@ class ActionTraceSpider(object):
             self.score = api.find_element_by_xpath("//div[@id='scoreCricle']").text
             self.end_html = api.current_url
         except TimeoutException:
-            print('作文提交失败|| 可能原因为：重复提交')
+            logger.warning('作文提交失败|| 可能原因为：重复提交')
             return None
 
     def save_action_history(self, api: Chrome):
-        create_pending = True
         capture_pending = False
         add_pending = False
 
@@ -216,9 +214,9 @@ class ActionTraceSpider(object):
                 with open(ROOT_PATH_ACTION_HISTORY, 'w', encoding='utf-8', newline='') as f:
                     writer = csv.writer(f)
                     writer.writerow(['publish_time', 'stu_name', 'stu_num', 'pid', 'title', 'score', 'end_html'])
-                    print('>>> Task over: create action_history.')
-        except FileNotFoundError as e:
-            print(e)
+                    logger.debug('>>> Task over: create action_history.')
+        except FileNotFoundError as ef:
+            logger.exception(ef)
             return None
 
         try:
@@ -230,10 +228,11 @@ class ActionTraceSpider(object):
                     f.write(html)
                     capture_pending = True
                 else:
-                    error_msg = ' The  MTH message is empty: {}'.format(self.pid)
+                    # error_msg = ' The  MTH message is empty: {}'.format(self.pid)
+                    pass
         finally:
             task_name = '>>> Task {}: capture end_rid paper score.'
-            print(task_name.format('over') if capture_pending else task_name.format('failed'))
+            logger.debug(task_name.format('over') if capture_pending else task_name.format('failed'))
 
         try:
             with open(ROOT_PATH_ACTION_HISTORY, 'a', encoding='utf8', newline='', errors='ignore') as f:
@@ -242,16 +241,17 @@ class ActionTraceSpider(object):
                 writer.writerow([now_, stu_name, stu_num, self.pid, self.title, score, filename_mhtml])
             add_pending = True
         finally:
-            task_name = '>>> Task {}: ADD action history.'
-            print(task_name.format('over') if add_pending else task_name.format('failed'))
+            task_name = '>>> Task {}: update actions history.'
+            logger.debug(task_name.format('over') if add_pending else task_name.format('failed'))
 
     def over(self, api):
-        print('>>', ''.center(30, '='), '<<')
-        print(f'>>> 用户名: {self.stu_name}')
-        print(f'>>> PID: {self.title}')
-        print(f'>>> 学号: {self.stu_num}')
-        print(f'>>> 得分:{self.score}' if self.score else f'>>> 作文异常')
-        print('>>', ''.center(30, '='), '<<')
+        user = {'username': self.stu_name, 'pid': self.title, 'user_id': self.stu_num}
+        if self.score:
+            user.update({'score': self.score})
+        else:
+            user.update({"message": '作文异常'})
+
+        logger.info(str(user))
 
         self.save_cookies(api)
         self.save_action_history(api)
@@ -279,11 +279,11 @@ class ActionTraceSpider(object):
                 self.over(api)
 
             except NoSuchElementException:
-                print('>>> [PANIC] 提交异常')
+                logger.critical('>>> 提交异常')
             finally:
                 global_lock()
                 api.quit()
-                print('>>> 工作栈已释放完毕.')
+                logger.success('>>> 工作栈已释放完毕')
 
 
 class PigAI(object):
@@ -293,16 +293,15 @@ class PigAI(object):
         self.use_gpt2 = use_gpt2
 
     def __str__(self):
-        print(self.youdao_cn2en('您好，欢迎使用PigAI！'))
+        logger.info(self.youdao_cn2en('您好，欢迎使用PigAI！'))
 
     @staticmethod
     def load_model(path: str = ROOT_PATH_MODEL_GPT2):
         pass
 
-    def generate_text(self, key_word: str or list = None) -> str:
+    def generate_text(self) -> str:
         """
 
-        :param key_word:
         :return:
         """
         if self.use_gpt2:
@@ -357,7 +356,7 @@ class PigAI(object):
             "Origin": "http://fanyi.youdao.com",
         }
 
-        # {'src': '蜘蛛', 'tgt': 'The spider'}
+        # {'PigAI_GPT2_src': '蜘蛛', 'tgt': 'The spider'}
         response = requests.post(url, headers=headers, data=data)
         try:
             len(response.json())
@@ -379,7 +378,7 @@ class Middleware(object):
         self.account_num: int = 0
 
     @staticmethod
-    def load_sample_text(file_path: str = ROOT_PATH_SENTENCE_DEFAULT, deep_learning=False) -> str:
+    def load_sample_text(deep_learning=False) -> str:
         if deep_learning:
             pass
             # with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
@@ -389,7 +388,7 @@ class Middleware(object):
             #     print(text)
             #     return text
         else:
-            from database.fake_corpus.load_fake_data import generate_fake_text
+            from PigAI_GPT2_src.database.fake_corpus.load_fake_data import generate_fake_text
             return generate_fake_text()['text']
 
     @staticmethod
@@ -420,10 +419,10 @@ class Middleware(object):
             try:
                 data = yaml.load(f, Loader=yaml.FullLoader)
             except ParserError:
-                print('>>> [ERROR] config.yaml 配置信息设置出现致命错误！')
+                logger.error('>>> [ERROR] config.yaml 配置信息设置出现致命错误！')
                 return None
             except FileNotFoundError:
-                print('>>> [ERROR] config.yaml 未找到yaml配置文件，请将配置文件放在当前目录下!')
+                logger.error('>>> [ERROR] config.yaml 未找到yaml配置文件，请将配置文件放在当前目录下!')
 
         for i, user in enumerate(data['users']):
             user: dict
@@ -434,23 +433,23 @@ class Middleware(object):
             try:
                 pids = pids if isinstance(pids, list) and pids[0] and isinstance(pids[0], str) else None
             except IndexError:
-                print(f'>>> [ERROR] username:{username} || 作文号填写异常 || pids: ({pids}) <<')
+                logger.warning(f'>>> [ERROR] username:{username} || 作文号填写异常 || pids: ({pids}) <<')
 
             if not class_name:
-                print('>>> [WARNING] class_name 班级信息为空')
+                logger.warning('>>> 班级信息为空')
 
             check = True if len([i for i in [username, password, pids] if not i]) < 1 else False
             if check:
-                print(f'>>> [INFO] username:{username} || Verified successfully || Start Coroutine Task <<')
+                # logger.success(f'>>> [INFO] username:{username} || Verified successfully || Start Coroutine Task <<')
                 self.account_q.put_nowait(user)
                 self.account_num = self.account_q.qsize()
             else:
-                print(f'>>> [ERROR] username:{username} || 配置信息输入格式有误  <<')
+                logger.error(f'>>> username:{username} || 配置信息输入格式有误  <<')
 
     def coroutine_engine(self):
         while not self.work_q.empty():
             data = self.work_q.get_nowait()
-            print('>>> [RUN] Coroutine_ID: {}'.format(data['username']))
+            logger.success('>>> Coroutine_ID: {}'.format(data['username']))
             try:
                 self.load_workspace(
                     data['username'],
@@ -460,11 +459,10 @@ class Middleware(object):
                     pid=data['pids']
                 ).run()
             except SessionNotCreatedException or WebDriverException:
-                print('>>> [INFO] Coroutine_ID: {} || 任务强制结束 '.format(data['username']))
+                logger.info('>>> Coroutine_ID: {} || 任务强制结束 '.format(data['username']))
 
     def coroutine_speed_up(self, account_info: dict):
         task_list = []
-        account_list = []
         pids = account_info.get('user').get('pids')
 
         if len(pids) > 1:
@@ -499,9 +497,9 @@ class Middleware(object):
             self.load_user_config()
             self.do_middleware_engine()
         except UnknownMethodException:
-            print('>>> [INFO] 任务强制结束，未载入文本生成模型！')
+            logger.warning('>>> 任务强制结束，未载入文本生成模型！')
         except WebDriverException or SessionNotCreatedException:
-            print('>>> [INFO] 任务强制结束')
+            logger.warning('>>> 任务强制结束')
 
 
 def global_lock():
@@ -511,9 +509,11 @@ def global_lock():
             pass
 
 
-# 欢迎使用PigAI #
+# ---------------------------------
+# 欢迎使用PigAI
+# ---------------------------------
 if __name__ == '__main__':
     try:
         Middleware().run(use_AI_Module=False)
     except Exception as e:
-        print(f'An unknown error occurred || {e}'.center(30, '='))
+        logger.exception(e)

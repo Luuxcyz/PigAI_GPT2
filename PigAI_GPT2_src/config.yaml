@@ -7,9 +7,8 @@ users:
       # 班级，请自行打开批改网，看看自己的班级全称：字符串
       class_name:
       # 作文号，支持多篇作文并发，pids len ∈[1,∞）List[str]
-      pids: [ '1586732' ]
-      # 接收汇报的邮箱：仅在部署环境下使用
-      email: 'xyh.hainanu@qq.com'
+      pids: [ '2283917' ]
+
 #  - user:
 #      username: ''
 #      password: ''
