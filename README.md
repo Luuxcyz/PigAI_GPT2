@@ -1,6 +1,6 @@
 # PigAI_GPT2
 
-![](https://latex.codecogs.com/svg.latex?\rm PigAI\_GPT_2) 批改网写作助手
+![](https://latex.codecogs.com/svg.latex?\rm%20PigAI\_GPT_2) 批改网写作助手
 
 ## :carousel_horse: 服务条款
 
@@ -10,7 +10,7 @@
 
 ## :eagle: 快速上手
 
-- 本项目`文本生成`内核分为![](https://latex.codecogs.com/svg.latex?\rm Core-Ord)与![](https://latex.codecogs.com/svg.latex?\rm Core-NLP)，深度学习内核暂未开源（将在今后版本发布）；
+- 本项目`文本生成`内核分为![](https://latex.codecogs.com/svg.latex?\rm%20Core-Ord)与![](https://latex.codecogs.com/svg.latex?\rm%20Core-NLP)，深度学习内核暂未开源（将在今后版本发布）；
 - 本项目使用`Python3`编写，短期内无“软化”动机，故需您在使用该脚本前熟悉`Python`编程环境并具备一定的`debug`能力。
 
 ### 【方案一】用户
