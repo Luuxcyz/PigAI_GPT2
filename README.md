@@ -1,6 +1,6 @@
-# $\rm PigAI\_GPT_2$
+# PigAI_GPT2
 
- 批改网写作助手
+![](https://latex.codecogs.com/svg.latex?\rm PigAI\_GPT_2) 批改网写作助手
 
 ## :carousel_horse: 服务条款
 
@@ -10,7 +10,7 @@
 
 ## :eagle: 快速上手
 
-- 本项目`文本生成`内核分为$\rm Core-Ord$与$\rm Core-NLP$，深度学习内核暂未开源（将在今后版本发布）；
+- 本项目`文本生成`内核分为![](https://latex.codecogs.com/svg.latex?\rm Core-Ord)与![](https://latex.codecogs.com/svg.latex?\rm Core-NLP)，深度学习内核暂未开源（将在今后版本发布）；
 - 本项目使用`Python3`编写，短期内无“软化”动机，故需您在使用该脚本前熟悉`Python`编程环境并具备一定的`debug`能力。
 
 ### 【方案一】用户
@@ -65,17 +65,17 @@ users:
 4. **Enjoy it♂**
 
     更多疑问请在`issue`中提出或通过`email`私信作者。
-    
+
     - **历史操作**
-    
+
         成功运行后，可在`./PigAI_GPT2_src/database/action_history.csv`中查看历史操作。
-    
+
     - **查看评测**
-    
+
         成功运行后，可在`./PigAI_GPT2_src/database/paper_score/`中查看以`.mhtml`文件封装的评测结果页面。若您第一次打开这种格式的文件，请<kbd>右键</kbd>目标文件后，在<kbd>打开方式</kbd>中选择以`Chrome`、`Edge`等浏览器启动。
-    
+
     - **文本长度**
-    
+
         ```python
         # ---------------------------------------------------
         # TODO (√)TexLen -- 文本词数区间起点
@@ -100,7 +100,7 @@ users:
 
 - （更新中...）
 
-### :alien:混淆神经网络$(\rm ONN)$
+### :alien:混淆神经网络![](https://latex.codecogs.com/svg.latex?(\rm ONN))
 
 > 一种基于回文并序自然语言阅读理解的深度学习模型（尝试适配分布式异构计算）
 
@@ -114,7 +114,7 @@ users:
 
 - **睿智**
 
-    - 本项目深度学习内核暂未开源，当前版本使用的仍是随机语句组合方案（$Core-\rm Ord$）;
+    - 本项目深度学习内核暂未开源，当前版本使用的仍是随机语句组合方案![](https://latex.codecogs.com/svg.latex?(Core-\rm Ord));
     - <u>深度学习内核</u>生成的文本具有极强的倾略性，实测分数（批改网打分）均分保持在96.43左右，而使用<u>普通核心</u>则能达到78~89的平均范围，极少数情况出现`异常作文`；
 
 - **提醒**
@@ -135,7 +135,7 @@ users:
 
 - [ ] 多种阅读理解模型介绍
 - [ ] 多种文本生成模型介绍
-- [ ] 基于[**$DIKW$智慧图谱**](http://www.yucongduan.org/)技术的`智能决策+智能应答`解决方案介绍
+- [ ] 基于[**DIKW智慧图谱**](http://www.yucongduan.org/)技术的`智能决策+智能应答`解决方案介绍
 
 ## :email: 联系我们
 
@@ -143,4 +143,7 @@ users:
 
 - [**Email**](mailto:RmAlkaid@outlook.com?subject=CampusDailyAutoSign-ISSUE) **||** [**Home**](https://a-rai.github.io/)
 
-###  
+## :link: 参考资料
+
+[^Latex-Markdown渲染]: https://latex.codecogs.com/
+
