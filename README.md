@@ -1,6 +1,6 @@
 # PigAI_GPT2
 
-![](https://latex.codecogs.com/svg.latex?\rm%20PigAI\_GPT_2) 批改网写作助手
+![](https://latex.codecogs.com/svg.latex?\rm%20PigAI\\_GPT_2) 批改网写作助手
 
 ## :carousel_horse: 服务条款
 
